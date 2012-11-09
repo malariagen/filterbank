@@ -1,6 +1,8 @@
 import json
 import string
 from os import path
+import yaml
+import sys
 
 class Base64:
     alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits + '+-'
@@ -37,8 +39,8 @@ class Encoder:
     def start(self, output_location, metadata, block_size):
         filename = path.join(output_location, metadata.get('short_name',metadata['name'])+'_'+'{0:08d}'.format(block_size))
         metadata['block_size'] = block_size
-        with open(filename+'.json', 'w') as file:
-            json.dump(metadata, file)
+        with open(filename+'.yaml', 'w') as file:
+            yaml.dump(metadata, file)
         self.datafile = open(filename+'.data', 'w')
     def finish(self):
         self.datafile.close()
@@ -60,4 +62,21 @@ class FixedLengthB64(Encoder):
             scaled_value = self.dynamic_range
         self.datafile.write(Base64.encode_int(scaled_value, self.length))
 
+
+#Some magic to allow us to ask the module for classes by string and dict
+class Wrapper:
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+    def __getattr__(self,name):
+        return getattr(self.wrapped, name)
+    def __call__(self, config):
+        if type(config) == str:
+            cls, kwargs = config, {}
+        elif type(config) == dict:
+            cls, kwargs = list(config.items())[0]
+        else:
+            log.error("Config for "+__name__+" is not str or dict but"+str(config))
+        return getattr(self.wrapped, cls)(**kwargs)
+
+sys.modules[__name__] = Wrapper(sys.modules[__name__])
 
