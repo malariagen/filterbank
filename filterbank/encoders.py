@@ -1,8 +1,8 @@
-import json
 import string
 from os import path
 import yaml
 import sys
+from filterbank.logger import log
 
 class Base64:
     alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits + '+-'
@@ -33,9 +33,9 @@ class Base64:
         return rs
 
 class Encoder:
-    def __init__(self, *args, **kwattrs):
+    def __init__(self, *args, **kwargs):
         #Add in arbitary args in case any method has config
-        self.__dict__.update(**kwattrs)
+        self.__dict__.update(**kwargs)
     def start(self, output_location, metadata, block_size):
         filename = path.join(output_location, metadata.get('short_name',metadata['name'])+'_'+'{0:08d}'.format(block_size))
         metadata['block_size'] = block_size
@@ -45,22 +45,32 @@ class Encoder:
     def finish(self):
         self.datafile.close()
 
+class TabDelimited(Encoder):
+    def start(self, output_location, metadata, block_size):
+        super().start(output_location, metadata, block_size)
+        self.datafile.write('\t'.join(map(str,metadata['accumulators']))+'\n')
+    def write(self, values):
+        self.datafile.write('\t'.join(map(str,values))+'\n')
+
 #Arguments: range, length=3
 class FixedLengthB64(Encoder):
-    def __init__(self, *args, **kwattrs):
-        super().__init__(self, *args, **kwattrs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.dynamic_range = int(64**self.length-10)
-        self.max, self.min = self.range
+        self.min, self.max = self.range
         self.scaling_factor = 1.0/(self.max-self.min)*self.dynamic_range
-    def write(self, value):
-        if value is None:
-            return '~' * self.length
-        scaled_value = int(round((value-self.min)*self.scaling_factor))
-        if scaled_value < 0:
-            scaled_value = 0
-        if scaled_value > self.dynamic_range:
-            scaled_value = self.dynamic_range
-        self.datafile.write(Base64.encode_int(scaled_value, self.length))
+    def write(self, values):
+        print(values)
+        for value in values:
+            if value is None:
+                self.datafile.write(Base64.encode_int(value, self.length))
+                return
+            scaled_value = int(round((value-self.min)*self.scaling_factor))
+            if scaled_value < 0:
+                scaled_value = 0
+            if scaled_value > self.dynamic_range:
+                scaled_value = self.dynamic_range
+            self.datafile.write(Base64.encode_int(scaled_value, self.length))
 
 
 #Some magic to allow us to ask the module for classes by string and dict
