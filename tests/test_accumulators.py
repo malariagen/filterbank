@@ -26,6 +26,17 @@ class TestAccumulators(unittest.TestCase):
         a(4)
         self.assertEqual(4,a.result())
         a(2)
+        self.assertRaises(ValueError, lambda: a(-3))
+        self.assertEqual(2.8284271247461903,a.result())
+        a.reset()
+        self.assertIsNone(a.result())
+
+    def testArithmeticMean(self):
+        a = accumulators('ArithmeticMean')
+        self.assertIsNone(a.result())
+        a(4)
+        self.assertEqual(4,a.result())
+        a(2)
         a(-3)
         self.assertEqual(1,a.result())
         a.reset()

@@ -60,7 +60,6 @@ class FixedLengthB64(Encoder):
         self.min, self.max = self.range
         self.scaling_factor = 1.0/(self.max-self.min)*self.dynamic_range
     def write(self, values):
-        print(values)
         for value in values:
             if value is None:
                 self.datafile.write(Base64.encode_int(value, self.length))

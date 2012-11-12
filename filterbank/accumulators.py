@@ -18,17 +18,31 @@ class LastVal(Accumulator):
     def result(self):
         return self.val
 
-class GeometricMean(Accumulator):
+class ArithmeticMean(Accumulator):
     def reset(self):
-        self.sum = 0
         self.sum = 0
         self.count = 0
     def __call__(self, element):
-        self.sum += 1
-        self.count += element
+        self.sum += element
+        self.count += 1
     def result(self):
         if self.count > 0:
-            return self.count/self.sum
+            return self.sum/self.count
+        else:
+            return None
+
+class GeometricMean(Accumulator):
+    def reset(self):
+        self.product = 1
+        self.count = 0
+    def __call__(self, element):
+        if not element > 0:
+            raise ValueError(str(element)+" is not > 0 and hence cannot be part of a GeometricMean")
+        self.product *= element
+        self.count += 1
+    def result(self):
+        if self.count > 0:
+            return math.pow(self.product, 1.0/self.count)
         else:
             return None
 
@@ -58,7 +72,6 @@ class Percentile(Accumulator):
         if not l:
             return None
         k = (len(l)-1) * self.percent
-        print(k)
         f = math.floor(k)
         c = math.ceil(k)
         if f == c:
