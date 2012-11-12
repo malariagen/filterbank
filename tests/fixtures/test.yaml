@@ -1,0 +1,9 @@
+block_sizes:
+  start: 1
+  end: 16
+  mult: 4
+channels:
+  TestChannel:
+    value: random*sine
+    encoder: 'TabDelimited'
+    accumulators: ['Max']
