@@ -1,12 +1,14 @@
 import filterbank.accumulators as accumulators
 import filterbank.encoders as encoders
 from filterbank.tabfile import Reader
+import copy
 
 class BlockDigester:
     def __init__(self, block_size, channel_config, output_location):
         self.seen_rows = 0
         #Accumulators bypassed if we are just doing single values
         if block_size == 1:
+            channel_config = copy.deepcopy(channel_config)
             channel_config['accumulators'] = ['LastVal']
         self.block_size = block_size
         self.evaluator = compile(channel_config['value'], '<string>', 'eval')

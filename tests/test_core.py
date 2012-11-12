@@ -52,4 +52,11 @@ name: TestChannel
 value: random*sine
 """
             , 'TestChannel_00000001.yaml')
+        self.assertFileContents("""accumulators: [Max]
+block_size: 4
+encoder: TabDelimited
+name: TestChannel
+value: random*sine
+"""
+            , 'TestChannel_00000004.yaml')
 
