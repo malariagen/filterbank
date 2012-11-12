@@ -33,6 +33,7 @@ The config is a yaml file with several sections:
                       #specify the class with an associative array.
                       #E.g. [{'Percentile': {'percent':0.25}}, 'Max', 'Min'] would give you the
                       # 1st quartile, max and min as output.
+                      #Note that for a block size of 1 only the LastVal accumulator will be used.
         encoder:      #Specify the class used to output the channel. Either FixedWidthBase64 (for
                       #DQX webapp) or TabDelimited. Again either as a string or associative array
                       #with args.
