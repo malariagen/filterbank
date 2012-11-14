@@ -3,6 +3,7 @@ import yaml
 import logging
 from filterbank.logger import log
 from filterbank.core import FilterBankProcessor
+import os.path
 
 def parse_metadata(metadata):
     result = {}
@@ -14,6 +15,16 @@ def parse_metadata(metadata):
                 key, val = entry.split(':')
                 result[key] = val
     return result
+
+class Loader(yaml.Loader):
+    def __init__(self, stream):
+        self._root = os.path.split(stream.name)[0]
+        super(Loader, self).__init__(stream)
+    def include(self, node):
+        filename = os.path.join(self._root, self.construct_scalar(node))
+        with open(filename, 'r') as f:
+            return yaml.load(f, Loader)
+Loader.add_constructor('!include', Loader.include)
 
 def commandLineInvocation():
     parser = argparse.ArgumentParser(description='Process files in a given directory')
@@ -28,7 +39,7 @@ def commandLineInvocation():
     #noinspection PyBroadException
     try:
         with open(args.config,'r') as file:
-            config = yaml.load(file)
+            config = yaml.load(file, Loader)
     except:
         log.exception("\tError loading config from {file}".format(file=args.config))
         return
