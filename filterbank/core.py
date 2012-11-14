@@ -40,11 +40,11 @@ def geometric_series(start, max, mult):
     return result
 
 class FilterBankProcessor:
-    def __init__(self, input_file, output_location, config):
+    def __init__(self, input_file, output_location, config, extra_metadata={}):
         self.block_sizes =  geometric_series(config['block_sizes']['start'], config['block_sizes']['end'], config['block_sizes'].get('mult',10))
         self.reader = Reader(input_file)
         self.output_location = output_location
-        self.channel_configs = [dict({'name':name},**chan_config) for name, chan_config in config['channels'].items()]
+        self.channel_configs = [dict({'name':name}, **dict(extra_metadata, **chan_config)) for name, chan_config in config['channels'].items()]
 
     def process(self):
         digesters = [BlockDigester(block_size, channel_config, self.output_location)

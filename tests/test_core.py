@@ -36,7 +36,7 @@ class TestCore(unittest.TestCase):
         self.copyFixture('test.yaml')
         with open(path.join(self.my_dir, 'test.yaml'),'r') as file:
             config = yaml.load(file)
-        p = core.FilterBankProcessor(path.join(self.my_dir, 'test.tab'), self.my_dir, config)
+        p = core.FilterBankProcessor(path.join(self.my_dir, 'test.tab'), self.my_dir, config, extra_metadata={'foo':'bar'})
         p.process()
         self.assertFileExists('TestChannel_00000001.yaml')
         self.assertFileExists('TestChannel_00000004.yaml')
@@ -48,6 +48,7 @@ class TestCore(unittest.TestCase):
         self.assertFileContents("""accumulators: [LastVal]
 block_size: 1
 encoder: TabDelimited
+foo: bar
 name: TestChannel
 value: random*sine
 """
@@ -55,6 +56,7 @@ value: random*sine
         self.assertFileContents("""accumulators: [Max]
 block_size: 4
 encoder: TabDelimited
+foo: bar
 name: TestChannel
 value: random*sine
 """
