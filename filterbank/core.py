@@ -11,12 +11,10 @@ class BlockDigester:
             channel_config = copy.deepcopy(channel_config)
             channel_config['accumulators'] = ['LastVal']
         self.block_size = block_size
-        self.evaluator = compile(channel_config['value'], '<string>', 'eval')
         self.accumulators = [accumulators(accum) for accum in channel_config['accumulators']]
         self.encoder = encoders(channel_config['encoder'])
         self.encoder.start(output_location, channel_config, block_size)
-    def process_row(self, row):
-        value = eval(self.evaluator, {}, row)
+    def process_value(self, value):
         for accum in self.accumulators:
             accum(value)
         self.seen_rows += 1
@@ -47,14 +45,19 @@ class FilterBankProcessor:
         self.channel_configs = [dict({'name':name}, **dict(extra_metadata, **chan_config)) for name, chan_config in config['channels'].items()]
 
     def process(self):
-        digesters = [BlockDigester(block_size, channel_config, self.output_location)
-                             for block_size in self.block_sizes
-                               for channel_config in self.channel_configs]
-        for entry in self.reader:
+        evaluators_and_digesters = []
+        for channel_config in self.channel_configs:
+            evaluator = compile(channel_config['value'], '<string>', 'eval')
+            digesters = [BlockDigester(block_size, channel_config, self.output_location) for block_size in self.block_sizes]
+            evaluators_and_digesters.append((evaluator, digesters))
+        for row in self.reader:
+            for evaluator, digesters in evaluators_and_digesters:
+                value = eval(evaluator, {}, row)
+                for digester in digesters:
+                    digester.process_value(value)
+        for evaluator, digesters in evaluators_and_digesters:
             for digester in digesters:
-                digester.process_row(entry)
-        for digester in digesters:
-            digester.finish()
+                digester.finish()
 
 
 
