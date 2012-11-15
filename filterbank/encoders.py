@@ -62,15 +62,18 @@ class FixedLengthB64(Encoder):
     def write(self, values):
         for value in values:
             if value is None:
-                self.datafile.write(Base64.encode_int(value, self.length))
-                return
-            scaled_value = int(round((value-self.min)*self.scaling_factor))
-            if scaled_value < 0:
-                scaled_value = 0
-            if scaled_value > self.dynamic_range:
-                scaled_value = self.dynamic_range
-            self.datafile.write(Base64.encode_int(scaled_value, self.length))
+                self.datafile.write(Base64.encode_int(None, self.length))
 
+            else:
+                try:
+                    scaled_value = int(round((value-self.min)*self.scaling_factor))
+                    if scaled_value < 0:
+                        scaled_value = 0
+                    if scaled_value > self.dynamic_range:
+                        scaled_value = self.dynamic_range
+                    self.datafile.write(Base64.encode_int(scaled_value, self.length))
+                except(ValueError, OverflowError):
+                    self.datafile.write(Base64.encode_int(None, self.length))
 
 #Some magic to allow us to ask the module for classes by string and dict
 class Wrapper:

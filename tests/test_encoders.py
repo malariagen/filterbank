@@ -60,12 +60,12 @@ class FixedLengthB64(TestEncoders):
         e = encoders({'FixedLengthB64':{'length':3, 'range':[0,100]}})
         e.start(self.my_dir, {'name':'quango', 'accumulators':['Bob', 'Bill']}, 42)
         e.write([1,2,3])
-        e.write([4,5,None])
-        e.write([-20,500,None])
+        e.write([4,5,float('nan')])
+        e.write([-20,500,None, float('Inf'), float('-Inf')])
         e.finish()
         self.assertFileExists('quango_00000042.data')
         self.assertFileContents(
-            "Ao9BR7B64Cj1DMz~~~AAA--2~~~",
+            "Ao9BR7B64Cj1DMz~~~AAA--2~~~~~~~~~",
             'quango_00000042.data')
         self.assertFileExists('quango_00000042.yaml')
         self.assertFileContents(
