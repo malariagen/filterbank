@@ -14,7 +14,7 @@ class Reader:
             self.file = codecs.getreader("utf-8")(gzip.GzipFile(file, 'r'))
         else:
             self.file = open(file, 'r')
-        dialect = csv.Sniffer().sniff(self.file.read(2048))
+        dialect = csv.Sniffer().sniff(self.file.read(2048*4))
         self.file.seek(0)
         reader = csv.reader(self.file, dialect)
         #Read a line so we get the fieldnames loaded
