@@ -23,6 +23,8 @@ class BlockDigester:
     def end_block(self):
         self.seen_rows = 0
         self.encoder.write([accum.result() for accum in self.accumulators])
+        for accum in self.accumulators:
+            accum.reset()
     def finish(self):
         if self.seen_rows > 0:
             self.end_block()
